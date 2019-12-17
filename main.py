@@ -56,6 +56,7 @@ for t in threads:
         comments = [x for x in comments if x.parent_id == x.link_id]
         print("Here are the top ",num_comments," comments:")
         # print out the comment recommendations
+        num_comments = min(num_comments,len(comments))
         for x in range(num_comments):
             # print("*************** Comment  | Score: ", c.score, "***************")
             # print("\n\n")
@@ -68,7 +69,7 @@ for t in threads:
 
 print("Final frequency chart:")
 most_freq_words = Counter(final_wordlist)
-ignore= ['the','a','if','in','it','of','or','and','to','for','you','are','I','on','that','-','with','is','*','but','as','not','most','like','your', ".", "|","___"]
+ignore= ['the','The','be','this','at','have','can','more','will','a','if','in','it','of','or','and','to','for','you','are','I','on','that','-','with','is','*','but','as','not','most','like','your', ".", "|","___"]
 for word in ignore:
     if word in most_freq_words:
         del most_freq_words[word]
@@ -80,7 +81,7 @@ links_from_comments = []
 for x in final_wordlist:
     # reddit often formats links like such: [text](link)
     # searching for ]( might also work but not everyone formats their links, some just paste a raw text
-    if "http" in x and ("reddit" not in x or "redd.it" not in x or "imgur" not in x):
+    if "http" in x and ("reddit" not in x and "redd.it" not in x and "imgur" not in x):
         # we substring from between the parenthesis of [text](link) and just hope that they put spaces if they didn't try to format
         links_from_comments.append(x[x.find('(')+1:x.find(')')])
 
