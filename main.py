@@ -80,7 +80,7 @@ links_from_comments = []
 for x in final_wordlist:
     # reddit often formats links like such: [text](link)
     # searching for ]( might also work but not everyone formats their links, some just paste a raw text
-    if "http" in x and ("reddit" not in x or "redd.it" not in x):
+    if "http" in x and ("reddit" not in x or "redd.it" not in x or "imgur" not in x):
         # we substring from between the parenthesis of [text](link) and just hope that they put spaces if they didn't try to format
         links_from_comments.append(x[x.find('(')+1:x.find(')')])
 
