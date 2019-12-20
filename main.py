@@ -4,8 +4,8 @@ import praw
 import json
 from praw.models import MoreComments
 from collections import Counter
-from nltk.tag import pos_tag
 import re
+
 
 
 # Initialize reddit
@@ -21,9 +21,9 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
 
 
 # Google
-item = input("Enter an item (e.g. \"shoes\"): ")
+item = input("Enter you request (e.g. \"best laptop, favorite president\"): ")
 # item = "shoes"
-query = "best " + item + " reddit"
+query = item + " reddit" + " site:reddit.com"
 threads = list(search(query, num=10, start=0, stop=10, pause=2))
 print(threads)
 
@@ -36,7 +36,10 @@ final_wordlist = []
 for t in threads:
 
     print("\n\n"+t)
+    # praw sucks, this takes forever to do because it loads literally everything (all 3 bajillion comments)
     submission = reddit.submission(url=t)
+    # The below line doesn't help I assume
+    submission.comment_sort = 'top'
     submission.comments.replace_more()
 
     print("Score: ", submission.score)
@@ -50,24 +53,30 @@ for t in threads:
         # split by anything whitespace
         final_wordlist.extend(submission.selftext.split())
         #might need to post the comments if some unorthodox thing is happening (shoes thread)
-    else:
-        comments = submission.comments.list()
-        comments = sorted(comments, key=lambda a: a.score, reverse=True)
-        comments = [x for x in comments if x.parent_id == x.link_id]
-        print("Here are the top ",num_comments," comments:")
-        # print out the comment recommendations
-        num_comments = min(num_comments,len(comments))
-        for x in range(num_comments):
-            # print("*************** Comment  | Score: ", c.score, "***************")
-            # print("\n\n")
-            # print(c.body)
+    # else:
+    # Do this for guides regardless
+    comments = submission.comments.list()
+    comments = [x for x in comments if x.parent_id == x.link_id]
 
-            print("*************** Comment #", x+1, " | Score: ", comments[x].score,"***************")
-            print("\n")
-            print(comments[x].body)
-            final_wordlist.extend(comments[x].body.split())
+    # my attempt to optimize
+    num_comments = min(num_comments,len(comments))
+    comments = sorted(comments, key=lambda a: a.score, reverse=True)
 
-print("Final frequency chart:")
+    # cut off list to max nums
+    comments = comments[:num_comments]
+    print("Here are the top ",num_comments," comments:")
+    # print out the comment recommendations
+    for x in range(num_comments):
+        # print("*************** Comment  | Score: ", c.score, "***************")
+        # print("\n\n")
+        # print(c.body)
+
+        print("\t*************** Comment #", x+1, " | Score: ", comments[x].score,"***************")
+        print(comments[x].body)
+        print("\t\n\n")
+        final_wordlist.extend(comments[x].body.split())
+
+print("\n\nFinal frequency chart:")
 most_freq_words = Counter(final_wordlist)
 ignore= ['the','The','be','this','at','have','can','more','will','a','if','in','it','of','or','and','to','for','you','are','I','on','that','-','with','is','*','but','as','not','most','like','your', ".", "|","___"]
 for word in ignore:
@@ -87,5 +96,3 @@ for x in final_wordlist:
 
 print("Links found in comments: ")
 print(links_from_comments)
-
-print("done")
